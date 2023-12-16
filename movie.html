@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+	<meta charset="utf-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>MOVIES</title>
+	<style>
+		.maindiv{
+			margin: 10px;
+			display: flex;
+		}
+
+		#results{
+			width: 70%;
+			padding: 5px;
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-evenly;
+		}
+		.movie{
+			width: 10%;
+			padding: 5px;
+			margin-bottom: 10px;
+			position: relative;
+			border: solid 1px black;
+		}
+		.movie img {
+			max-height: 60%;
+			width: 100%;
+			margin: 0 auto;
+			align-content: center;
+		}
+		.movie button{
+			position: absolute;
+			bottom: 0;
+			width: 100%;
+			padding: 5px;
+			margin-left: -5px;
+			border-radius: 5px;
+		}
+		.movie button:hover{
+			background-color: cadetblue;
+			opacity: 0.7;
+		}
+	</style>
+
+</head>
+
+
+
+<body>
+
+
+
+<h1>Movie Search</h1>
+
+<form>
+
+	<label for="search">Search for a movie: </label>
+
+	<input type="search" name="search" id="search" placeholder="Enter movie title">
+
+	<label for="type">Type: </label>
+
+	<select id="type" name="type">
+
+		<option value="movie">Movie</option>
+
+		<option value="series">Series</option>
+
+		<option value="episode">Episode</option>
+
+	</select>
+
+	<input type="submit" value="Search">
+
+</form>
+
+<div class="maindiv">
+
+	<div id="results"></div>
+
+
+
+	<div id="details"></div>
+
+</div>
+
+<div id="pagination"></div>
+
+
+
+<script type="text/javascript">
+
+	function getMovies(page){
+
+		var search = document.getElementById("search").value;
+
+		var type = document.getElementById("type").value;
+
+		var	request = new XMLHttpRequest();
+
+		request.onreadystatechange = function(){
+
+		if(request.readyState === 4 && request.status === 200){
+
+			var movies = JSON.parse(request.responseText);
+
+			if(movies.Response === "False"){
+
+				document.getElementById("results").innerHTML = "<p>Movie not Found</p>";
+
+				document.getElementById("pagination").innerHTML = "";
+
+			} 
+
+			else{
+
+				var movieList = "";
+
+				for(var i = 0; i<movies.Search.length; i++){
+
+					var movie = movies.Search[i];
+
+					movieList += "<div class='movie'>";
+
+					movieList += "<img src='"+ movie.Poster + "'>";
+
+                    movieList += "<div id=\"" + movie.imdbID + "\">";
+
+					movieList += "<h2>" + movie.Title +"</h2>";
+
+					movieList += "<p>Type: "+movie.Type+"</p>";
+
+					movieList += "<p>Year: "+movie.Year+"</p>";
+
+					movieList += "<button onclick='showDetails(\"" + movie.imdbID + "\")'>Details</button>";
+
+					movieList += "</div>";
+
+					movieList += "</div>";
+
+				}
+
+				document.getElementById("results").innerHTML = movieList;
+
+				var totalPages = Math.ceil(movies.totalResults/10);
+
+				var paginationBtn = "";
+
+				for(var j=1; j<=totalPages; j++){
+
+					paginationBtn +="<button onclick='getMovies("+j+")'>"+j+"</button>";
+
+				}
+
+				document.getElementById("pagination").innerHTML = paginationBtn;
+
+			}
+
+		}
+
+	}
+
+	request.open("GET", "http://www.omdbapi.com/?s="+search+"&type="+type+"&apikey=54326f80&page="+page);
+
+	request.send();
+}
+document.querySelector("form").addEventListener("submit", function(event){
+
+	event.preventDefault();
+
+	getMovies(1);
+
+});
+
+</script>
+
+</body>
+
+</html>
